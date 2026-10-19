@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disease Predictor | Smart Agro AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .form-grid{
+            display:grid;
+            grid-template-columns:1fr;
+            gap:14px;
+        }
+
+        textarea{
+            min-height:130px;
+            padding:12px;
+            border:1px solid #ccc;
+            border-radius:8px;
+            resize:vertical;
+            font-family:'Segoe UI',sans-serif;
+        }
+
+        .result-box,
+        .error-box{
+            display:none;
+            margin-top:20px;
+            padding:20px;
+            border-radius:10px;
+        }
+
+        .result-box{
+            background:#e8f5e9;
+            color:#1b5e20;
+        }
+
+        .error-box{
+            background:#ffebee;
+            color:#b71c1c;
+            font-weight:bold;
+        }
+
+        .result-box h3{
+            margin-bottom:10px;
+        }
+
+        .result-box p{
+            margin:8px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>Smart Agro AI</h2>
+    <a href="/seller_dashboard">Seller Dashboard</a>
+    <a href="/buyer_dashboard">Buyer Dashboard</a>
+    <a href="/market">Marketplace</a>
+    <a href="/predict_crop_page">AI Recommendation</a>
+    <a href="/voice_assistant">Voice Assistant</a>
+    <a href="/logout">Logout</a>
+</div>
+
+<div class="main">
+    <div class="topbar">
+        <h2>Crop Disease Predictor</h2>
+    </div>
+
+    <div class="card">
+        <form id="diseaseForm">
+            <div class="form-grid">
+                <input type="text" name="crop" placeholder="Crop name, example: rice" required>
+                <textarea name="symptoms" placeholder="Describe visible symptoms, example: yellow leaf edges, brown spots, wilting" required></textarea>
+            </div>
+
+            <button type="submit">Predict Disease</button>
+        </form>
+
+        <div id="result" class="result-box"></div>
+        <div id="error" class="error-box"></div>
+    </div>
+</div>
+
+<script>
+document.getElementById("diseaseForm").addEventListener("submit", async function(event){
+    event.preventDefault();
+
+    const resultBox = document.getElementById("result");
+    const errorBox = document.getElementById("error");
+    resultBox.style.display = "none";
+    errorBox.style.display = "none";
+
+    const payload = Object.fromEntries(new FormData(event.target).entries());
+
+    const response = await fetch("/predict_disease", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+        const result = data.result;
+        resultBox.innerHTML = `
+            <h3>${result.disease}</h3>
+            <p><strong>Confidence:</strong> ${result.confidence}%</p>
+            <p><strong>Treatment:</strong> ${result.treatment}</p>
+            <p><strong>Prevention:</strong> ${result.prevention}</p>
+        `;
+        resultBox.style.display = "block";
+    } else {
+        errorBox.textContent = data.error || "Unable to predict disease.";
+        errorBox.style.display = "block";
+    }
+});
+</script>
+
+</body>
+</html>

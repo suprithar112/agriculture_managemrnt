@@ -1,0 +1,9 @@
+
+Flask
+Flask-SQLAlchemy
+PyMySQL
+pandas
+numpy
+scikit-learn
+joblib
+gunicorn

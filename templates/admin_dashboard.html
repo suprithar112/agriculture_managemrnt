@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard | Smart Agro AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>⚙ Smart Agro AI</h2>
+
+    <a href="/admin_dashboard">Dashboard</a>
+    <a href="/market">Products</a>
+    <a href="/predict_crop_page">AI Recommendation</a>
+    <a href="/disease_predictor">Disease Predictor</a>
+    <a href="/voice_assistant">Voice Assistant</a>
+    <a href="/logout">Logout</a>
+</div>
+
+<div class="main">
+
+    <div class="topbar">
+        <h2>Admin Dashboard</h2>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="card mt">
+        <strong>{{ messages[0] }}</strong>
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="grid">
+
+        <div class="card">
+            <h3>Total Users</h3>
+            <h1>{{ users if users else 0 }}</h1>
+        </div>
+
+        <div class="card">
+            <h3>Total Farmers</h3>
+            <h1>{{ farmers if farmers else 0 }}</h1>
+        </div>
+
+        <div class="card">
+            <h3>Total Buyers</h3>
+            <h1>{{ buyers if buyers else 0 }}</h1>
+        </div>
+
+        <div class="card">
+            <h3>Total Products</h3>
+            <h1>{{ products if products else 0 }}</h1>
+        </div>
+
+        <div class="card">
+            <h3>Total Orders</h3>
+            <h1>{{ orders if orders else 0 }}</h1>
+        </div>
+
+        <div class="card">
+            <h3>Total Revenue</h3>
+            <h1>Rs. {{ revenue if revenue else 0 }}</h1>
+        </div>
+
+    </div>
+
+    <div class="card mt">
+        <h2>User Management</h2>
+
+        <table>
+            <tr>
+                <th>User</th>
+                <th>Role</th>
+                <th>Action</th>
+            </tr>
+
+            {% for user in user_list %}
+            <tr>
+                <td>{{ user.name }}<br><small>{{ user.email }}</small></td>
+                <td>{{ user.role }}</td>
+                <td>
+                    {% if user.id != session.get("user_id") %}
+                    <a href="/admin/delete_user/{{ user.id }}"><button>Delete</button></a>
+                    {% else %}
+                    Current Admin
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3">No users found</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div class="card mt">
+        <h2>Order Management</h2>
+
+        <table>
+            <tr>
+                <th>Order ID</th>
+                <th>Status</th>
+                <th>Update</th>
+            </tr>
+
+            {% for order in order_list %}
+            <tr>
+                <td>#{{ order.id }}</td>
+                <td>{{ order.status }}</td>
+                <td>
+                    {% if order.status != "Completed" %}
+                    <a href="/admin/complete_order/{{ order.id }}"><button>Approve</button></a>
+                    {% else %}
+                    Completed
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3">No orders found</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+</div>
+
+</body>
+</html>

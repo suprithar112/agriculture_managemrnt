@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Farmer Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>Farmer Panel</h2>
+
+    <a href="/seller_dashboard">My Products</a>
+    <a href="/predict_crop_page">AI Crop Recommendation</a>
+    <a href="/disease_predictor">Disease Predictor</a>
+    <a href="/voice_assistant">Voice Assistant</a>
+    <a href="/market">Marketplace</a>
+    <a href="/logout">Logout</a>
+</div>
+
+<div class="main">
+
+    <div class="topbar">
+        <h2>Farmer Dashboard</h2>
+    </div>
+
+    <div class="hero">
+        <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=1200">
+    </div>
+
+    <div class="grid">
+
+        <div class="card">
+            <h3>Total Products</h3>
+            <h1>{{ total_products|default(0) }}</h1>
+        </div>
+
+        <div class="card">
+            <h3>Total Orders</h3>
+            <h1>{{ total_orders|default(0) }}</h1>
+        </div>
+
+        <div class="card">
+            <h3>Revenue</h3>
+            <h1>Rs. {{ revenue|default(0) }}</h1>
+        </div>
+
+        <div class="card">
+            <h3>AI Predictions</h3>
+            <h1>{{ predictions|default(0) }}</h1>
+        </div>
+
+    </div>
+
+    <div class="card mt">
+        <h2>Farmer Features</h2>
+
+        <ul>
+            <li>Add Products</li>
+            <li>Manage Inventory</li>
+            <li>AI Crop Recommendation</li>
+            <li>Disease Prediction</li>
+            <li>Voice Assistant</li>
+            <li>Sales Analytics</li>
+            <li>Revenue Tracking</li>
+        </ul>
+    </div>
+
+</div>
+
+</body>
+</html>

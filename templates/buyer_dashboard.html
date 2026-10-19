@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buyer Dashboard | Smart Agro AI</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+
+    <style>
+        .hero{
+            background: linear-gradient(135deg,#1565c0,#42a5f5);
+            color:white;
+            padding:30px;
+            border-radius:15px;
+            margin-bottom:25px;
+        }
+
+        .dashboard-cards{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+            gap:20px;
+            margin-bottom:25px;
+        }
+
+        .card{
+            background:#fff;
+            padding:20px;
+            border-radius:15px;
+            box-shadow:0 4px 12px rgba(0,0,0,.1);
+        }
+
+        .card h3{
+            color:#1565c0;
+            margin-bottom:10px;
+        }
+
+        .card h1{
+            margin:0;
+            color:#0d47a1;
+        }
+
+        .section-title{
+            margin:25px 0 15px;
+            color:#0d47a1;
+        }
+
+        .action-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+            gap:20px;
+        }
+
+        button{
+            background:#1565c0;
+            color:white;
+            border:none;
+            padding:12px 18px;
+            border-radius:8px;
+            cursor:pointer;
+        }
+
+        button:hover{
+            background:#0d47a1;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            background:white;
+        }
+
+        table th{
+            background:#1565c0;
+            color:white;
+            padding:12px;
+        }
+
+        table td{
+            padding:12px;
+            border:1px solid #ddd;
+            text-align:center;
+        }
+
+        .status-pending{
+            color:orange;
+            font-weight:bold;
+        }
+
+        .status-completed{
+            color:green;
+            font-weight:bold;
+        }
+
+        .status-cancelled{
+            color:red;
+            font-weight:bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Sidebar -->
+
+<div class="sidebar">
+
+    <h2>🛒 Smart Agro AI</h2>
+
+    <a href="/buyer_dashboard">🏠 Dashboard</a>
+
+    <a href="/market">🌾 Marketplace</a>
+
+    <a href="/predict_crop_page">🤖 Crop Recommendations</a>
+
+    <a href="/logout">🚪 Logout</a>
+
+</div>
+
+<!-- Main Content -->
+
+<div class="main">
+
+    <!-- Hero -->
+
+    <div class="hero">
+
+        <h1>Welcome, {{ session.get('name') }}</h1>
+
+        <p>
+            Browse agricultural products, manage orders,
+            and discover trending crops.
+        </p>
+
+    </div>
+
+    <!-- Overview Cards -->
+
+    <div class="dashboard-cards">
+
+        <div class="card">
+            <h3>📦 Total Orders</h3>
+            <h1>{{ total_orders|default(0) }}</h1>
+        </div>
+
+        <div class="card">
+            <h3>💰 Amount Spent</h3>
+            <h1>₹{{ spent|default(0) }}</h1>
+        </div>
+
+        <div class="card">
+            <h3>🌾 Products Purchased</h3>
+            <h1>{{ purchased|default(0) }}</h1>
+        </div>
+
+        <div class="card">
+            <h3>⭐ Favorite Categories</h3>
+            <h1>{{ favorites|default(0) }}</h1>
+        </div>
+
+    </div>
+
+    <!-- Marketplace -->
+
+    <h2 class="section-title">🌾 Marketplace Access</h2>
+
+    <div class="action-grid">
+
+        <div class="card">
+
+            <h3>Browse Products</h3>
+
+            <p>
+                Explore products listed by farmers
+                and purchase directly.
+            </p>
+
+            <a href="/market">
+                <button>Open Marketplace</button>
+            </a>
+
+        </div>
+
+        <div class="card">
+
+            <h3>Search Products</h3>
+
+            <p>
+                Find products quickly by crop name
+                and category.
+            </p>
+
+            <a href="/market">
+                <button>Search Products</button>
+            </a>
+
+        </div>
+
+        <div class="card">
+
+            <h3>Filter by Price</h3>
+
+            <p>
+                View affordable products based on
+                your budget.
+            </p>
+
+            <a href="/market">
+                <button>Apply Filters</button>
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- Orders -->
+
+    <h2 class="section-title">📦 My Orders</h2>
+
+    <div class="card">
+
+        <table>
+
+            <tr>
+                <th>Order ID</th>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Total Price</th>
+                <th>Status</th>
+            </tr>
+
+            {% for order in orders %}
+
+            <tr>
+
+                <td>{{ order.id }}</td>
+
+                <td>{{ order.product.name }}</td>
+
+                <td>{{ order.quantity }}</td>
+
+                <td>₹{{ order.total_price }}</td>
+
+                <td>
+
+                    {% if order.status == "Completed" %}
+                        <span class="status-completed">
+                            {{ order.status }}
+                        </span>
+
+                    {% elif order.status == "Cancelled" %}
+                        <span class="status-cancelled">
+                            {{ order.status }}
+                        </span>
+
+                    {% else %}
+                        <span class="status-pending">
+                            {{ order.status }}
+                        </span>
+
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+    <!-- AI Recommendations -->
+
+    <h2 class="section-title">🤖 AI Recommendations</h2>
+
+    <div class="action-grid">
+
+        <div class="card">
+
+            <h3>Recommended Crops</h3>
+
+            <p>
+                AI suggests crops based on current
+                weather and soil conditions.
+            </p>
+
+            <a href="/predict_crop_page">
+                <button>View Recommendations</button>
+            </a>
+
+        </div>
+
+        <div class="card">
+
+            <h3>Trending Crops</h3>
+
+            <p>
+                Most popular and high-demand crops
+                in the marketplace.
+            </p>
+
+            <h2>{{ trending_crop|default("Rice") }}</h2>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

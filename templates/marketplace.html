@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace | Smart Agro AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .market-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+            gap:20px;
+        }
+
+        .product-card{
+            background:white;
+            padding:22px;
+            border-radius:12px;
+            box-shadow:0 4px 15px rgba(0,0,0,.08);
+        }
+
+        .product-card h3{
+            color:#1e5631;
+            margin-bottom:10px;
+        }
+
+        .product-card p{
+            margin:8px 0;
+        }
+
+        .buy-row{
+            display:flex;
+            gap:10px;
+            margin-top:15px;
+        }
+
+        .buy-row input{
+            width:90px;
+        }
+
+        .notice{
+            margin-bottom:20px;
+            padding:14px;
+            border-radius:10px;
+            display:none;
+            font-weight:bold;
+        }
+
+        .notice.success{
+            display:block;
+            background:#e8f5e9;
+            color:#1b5e20;
+        }
+
+        .notice.error{
+            display:block;
+            background:#ffebee;
+            color:#b71c1c;
+        }
+
+        .filter-form{
+            display:grid;
+            grid-template-columns:2fr 1fr 1fr auto auto;
+            gap:12px;
+            margin-bottom:20px;
+            align-items:center;
+        }
+
+        .filter-form input{
+            width:100%;
+        }
+
+        .secondary-link{
+            display:inline-block;
+            padding:12px 14px;
+            color:#1e5631;
+            text-decoration:none;
+            font-weight:bold;
+        }
+
+        @media(max-width:768px){
+            .filter-form{
+                grid-template-columns:1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>Smart Agro AI</h2>
+    <a href="/seller_dashboard">Seller Dashboard</a>
+    <a href="/buyer_dashboard">Buyer Dashboard</a>
+    <a href="/predict_crop_page">AI Recommendation</a>
+    <a href="/disease_predictor">Disease Predictor</a>
+    <a href="/voice_assistant">Voice Assistant</a>
+    <a href="/logout">Logout</a>
+</div>
+
+<div class="main">
+    <div class="topbar">
+        <h2>Marketplace</h2>
+    </div>
+
+    <div id="notice" class="notice"></div>
+
+    <form class="filter-form" method="GET" action="/market">
+        <input type="text" name="search" placeholder="Search crop name" value="{{ search or '' }}">
+        <input type="number" name="min_price" placeholder="Min price" value="{{ min_price or '' }}">
+        <input type="number" name="max_price" placeholder="Max price" value="{{ max_price or '' }}">
+        <button type="submit">Filter</button>
+        <a class="secondary-link" href="/market">Reset</a>
+    </form>
+
+    <div class="market-grid">
+        {% for product in products %}
+        <div class="product-card">
+            <h3>{{ product.name }}</h3>
+            <p><strong>Price:</strong> Rs. {{ product.price }}</p>
+            <p><strong>Available:</strong> {{ product.quantity }}</p>
+
+            {% if session.get("role") == "buyer" and product.quantity > 0 %}
+            <div class="buy-row">
+                <input type="number" min="1" max="{{ product.quantity }}" value="1" id="qty-{{ product.id }}">
+                <button type="button" onclick="placeOrder({{ product.id }})">Buy</button>
+            </div>
+            {% elif product.quantity <= 0 %}
+            <p><strong>Out of stock</strong></p>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="card">
+            <h3>No products yet</h3>
+            <p>Products added by farmers will appear here.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+async function placeOrder(productId){
+    const notice = document.getElementById("notice");
+    const quantity = document.getElementById("qty-" + productId).value;
+
+    const response = await fetch("/order", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({product_id: productId, quantity: quantity})
+    });
+
+    const data = await response.json();
+    notice.textContent = data.message;
+    notice.className = "notice " + (data.success ? "success" : "error");
+
+    if (data.success) {
+        setTimeout(() => window.location.reload(), 700);
+    }
+}
+</script>
+
+</body>
+</html>

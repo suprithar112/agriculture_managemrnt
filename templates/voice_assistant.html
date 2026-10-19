@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Assistant | Smart Agro AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .assistant-panel{
+            display:grid;
+            gap:16px;
+        }
+
+        .command-row{
+            display:flex;
+            gap:12px;
+        }
+
+        .command-row input{
+            flex:1;
+        }
+
+        .message{
+            min-height:80px;
+            padding:18px;
+            background:#e8f5e9;
+            color:#1b5e20;
+            border-radius:10px;
+            font-weight:bold;
+        }
+
+        .status-box{
+            padding:14px;
+            border-radius:10px;
+            background:#fff8e1;
+            color:#6d4c00;
+            font-weight:bold;
+        }
+
+        .status-box.success{
+            background:#e8f5e9;
+            color:#1b5e20;
+        }
+
+        .log-box{
+            padding:14px;
+            border:1px solid #ddd;
+            border-radius:10px;
+            background:#fafafa;
+            min-height:48px;
+        }
+
+        .hint-list{
+            line-height:1.8;
+        }
+
+        @media(max-width:768px){
+            .command-row{
+                flex-direction:column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>Smart Agro AI</h2>
+    <a href="/seller_dashboard">Seller Dashboard</a>
+    <a href="/buyer_dashboard">Buyer Dashboard</a>
+    <a href="/market">Marketplace</a>
+    <a href="/predict_crop_page">AI Recommendation</a>
+    <a href="/disease_predictor">Disease Predictor</a>
+    <a href="/logout">Logout</a>
+</div>
+
+<div class="main">
+    <div class="topbar">
+        <h2>Voice Assistant</h2>
+    </div>
+
+    <div class="card assistant-panel">
+        <div class="command-row">
+            <input id="commandInput" type="text" placeholder="Say or type: open marketplace">
+            <button type="button" onclick="startListening()">Start Voice</button>
+            <button type="button" onclick="sendCommand()">Run Command</button>
+        </div>
+
+        <div id="supportStatus" class="status-box">
+            Checking voice support...
+        </div>
+
+        <div id="message" class="message">
+            Try: open marketplace, crop recommendation, disease predictor, seller dashboard, buyer dashboard, admin dashboard, or logout.
+        </div>
+
+        <div id="transcriptLog" class="log-box">
+            Last command will appear here.
+        </div>
+
+        <div class="hint-list">
+            <strong>Supported commands:</strong><br>
+            Open marketplace<br>
+            Open crop recommendation<br>
+            Open disease predictor<br>
+            Open seller dashboard<br>
+            Open buyer dashboard<br>
+            Open admin dashboard<br>
+            Logout
+        </div>
+    </div>
+</div>
+
+<script>
+const messageBox = document.getElementById("message");
+const commandInput = document.getElementById("commandInput");
+const supportStatus = document.getElementById("supportStatus");
+const transcriptLog = document.getElementById("transcriptLog");
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+function setSupportStatus(){
+    const recognitionSupported = Boolean(SpeechRecognition);
+    const speechSupported = "speechSynthesis" in window;
+
+    if (recognitionSupported && speechSupported) {
+        supportStatus.textContent = "Voice input and spoken reply are supported in this browser.";
+        supportStatus.className = "status-box success";
+    } else if (recognitionSupported) {
+        supportStatus.textContent = "Voice input is supported, but spoken reply is not available. Text response will still work.";
+    } else {
+        supportStatus.textContent = "Voice input is not supported in this browser. Type a command and click Run Command, or open this page in Chrome/Edge for microphone voice.";
+    }
+}
+
+function speak(text){
+    if ("speechSynthesis" in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "en-IN";
+        window.speechSynthesis.speak(utterance);
+    }
+}
+
+function startListening(){
+    if (!SpeechRecognition) {
+        messageBox.textContent = "Voice recognition is not supported in this browser. Please type a command.";
+        transcriptLog.textContent = "Voice input unavailable. Use typed command fallback.";
+        speak(messageBox.textContent);
+        return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-IN";
+    recognition.interimResults = false;
+
+    recognition.onresult = function(event){
+        commandInput.value = event.results[0][0].transcript;
+        transcriptLog.textContent = "Heard: " + commandInput.value;
+        sendCommand();
+    };
+
+    recognition.onerror = function(){
+        messageBox.textContent = "Could not hear clearly. Please try again.";
+        transcriptLog.textContent = "Voice recognition error. Try again or type the command.";
+        speak(messageBox.textContent);
+    };
+
+    messageBox.textContent = "Listening...";
+    transcriptLog.textContent = "Listening for your command...";
+    recognition.start();
+}
+
+async function sendCommand(){
+    const command = commandInput.value.trim();
+
+    if (!command) {
+        messageBox.textContent = "Please say or type a command first.";
+        transcriptLog.textContent = "No command entered.";
+        speak(messageBox.textContent);
+        return;
+    }
+
+    messageBox.textContent = "Running command...";
+    transcriptLog.textContent = "Command: " + command;
+
+    const response = await fetch("/voice_command", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({command})
+    });
+
+    const data = await response.json();
+    messageBox.textContent = data.message || "Command completed.";
+    speak(messageBox.textContent);
+
+    if (data.redirect) {
+        transcriptLog.textContent = "Command: " + command + " | Redirecting to " + data.redirect;
+        setTimeout(() => {
+            window.location.href = data.redirect;
+        }, 1800);
+    }
+}
+
+setSupportStatus();
+</script>
+
+</body>
+</html>
